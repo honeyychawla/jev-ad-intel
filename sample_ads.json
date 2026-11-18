@@ -1,0 +1,66 @@
+[
+  {
+    "ad_id": "sample-1",
+    "brand": "Sample Courses (test)",
+    "format": "image",
+    "body": "Still stuck in a job that pays you less than you deserve?\nOur free 90-minute AI masterclass shows working professionals how to add ₹5 lakh to their salary in 6 months. 12,000+ students already did it.\nSeats close Sunday.",
+    "headline": "Free AI Masterclass for Working Professionals",
+    "link_description": "Live this Sunday, 7 PM",
+    "cta_button": "Sign up",
+    "start_date": "2026-09-01",
+    "is_active": true,
+    "variant_count": 6,
+    "landing_page_override": {
+      "title": "Free AI Masterclass | Sample Courses",
+      "headlines": ["Add ₹5 lakh to your salary with AI", "Free live masterclass this Sunday, 7 PM"],
+      "buttons": ["Register free"],
+      "text": "Free live masterclass for working professionals. Learn the 3 AI skills companies are hiring for. 12,000+ students. Register free, no card needed. Live this Sunday at 7 PM."
+    }
+  },
+  {
+    "ad_id": "sample-2",
+    "brand": "Sample Agency (test)",
+    "format": "video",
+    "body": "Get a FREE marketing audit of your ad account. We'll find where you're wasting money, no strings attached.",
+    "headline": "Free Ad Account Audit",
+    "cta_button": "Learn more",
+    "start_date": "2026-11-01",
+    "is_active": true,
+    "variant_count": 1,
+    "landing_page_override": {
+      "title": "Growth Plans | Sample Agency",
+      "headlines": ["Pick your growth plan", "Starter ₹9,999/month · Pro ₹24,999/month"],
+      "buttons": ["Subscribe now", "Pay ₹9,999"],
+      "text": "Choose a monthly plan to get started. Starter ₹9,999 per month includes campaign management. Pro ₹24,999 per month. Enter card details to subscribe. Cancel anytime."
+    }
+  },
+  {
+    "ad_id": "sample-3",
+    "brand": "Sample Fitness (test)",
+    "format": "image",
+    "body": "FLAT 50% OFF all protein tubs. Today only. Use code GAIN50.",
+    "headline": "50% off ends tonight",
+    "cta_button": "Shop now",
+    "start_date": "2026-11-14",
+    "is_active": true,
+    "variant_count": 3,
+    "landing_page_override": {
+      "title": "Protein Sale | Sample Fitness",
+      "headlines": ["Flat 50% off protein", "Ends tonight"],
+      "buttons": ["Add to cart", "Buy now"],
+      "text": "Flat 50% off all protein tubs with code GAIN50. Sale ends tonight at midnight. Whey protein 1kg now ₹1,499 (was ₹2,999). Free delivery."
+    }
+  },
+  {
+    "ad_id": "sample-4",
+    "brand": "Sample Fitness (test)",
+    "format": "video",
+    "body": "I used to skip breakfast and crash by 11 AM every single day. Then my nutritionist told me one thing that changed everything...",
+    "headline": "The breakfast mistake",
+    "cta_button": "Learn more",
+    "landing_url": null,
+    "start_date": "2026-10-10",
+    "is_active": true,
+    "variant_count": 2
+  }
+]

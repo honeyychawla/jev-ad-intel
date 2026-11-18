@@ -1,0 +1,14 @@
+# Secrets: your OpenRouter and Apify keys
+.env
+
+# Python
+.venv/
+__pycache__/
+*.pyc
+
+# Generated at runtime (saved searches, scraped ads, cache, CLI results)
+runs/
+data/
+results/
+
+.DS_Store

@@ -1,0 +1,225 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Ad Intel</title>
+<link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+<header class="topbar">
+  <div class="brand">
+    <span class="mark"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="10.5" cy="10.5" r="5.5"/><path d="m15 15 4.5 4.5"/></svg></span>
+    Ad Intel <span class="sub">Ad Library × Jev</span>
+  </div>
+  <div class="top-right">
+    <div class="cfg" id="cfg"></div>
+    <button type="button" class="icon-btn" id="settingsBtn" aria-label="Settings" title="Settings">
+      <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 1 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 1 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 1 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 1 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+    </button>
+  </div>
+</header>
+
+<main>
+  <section class="search-card" id="searchCard">
+    <div class="hero">
+      <h1>Search live ads</h1>
+      <p>Every active ad an advertiser runs on Facebook and Instagram, broken down by Jev.</p>
+    </div>
+    <form id="searchForm" autocomplete="off">
+      <div class="gbar" id="gbar">
+        <div class="query" id="queryBox">
+          <svg viewBox="0 0 24 24" class="icon" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>
+          <div class="chips" id="chips"></div>
+          <input id="queryInput" role="combobox" aria-autocomplete="list" aria-expanded="false" aria-controls="recent"
+            placeholder="Search advertisers, page links or page IDs">
+          <button type="button" class="qclear" id="qclear" aria-label="Clear search" title="Clear" hidden>
+            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6 6 18"/></svg>
+          </button>
+        </div>
+        <div class="recent" id="recent" role="listbox" aria-label="Recent searches" hidden></div>
+      </div>
+      <div class="controls">
+        <div class="filters-row">
+          <label class="select"><span>Country</span>
+            <select id="country">
+              <option value="IN" selected>India</option>
+              <option value="US">United States</option>
+              <option value="GB">United Kingdom</option>
+              <option value="AE">United Arab Emirates</option>
+              <option value="SG">Singapore</option>
+              <option value="AU">Australia</option>
+              <option value="CA">Canada</option>
+              <option value="ALL">All countries</option>
+            </select>
+          </label>
+          <label class="select"><span>Ad category</span>
+            <select id="category"><option>All ads</option></select>
+          </label>
+          <label class="select"><span>Ads per advertiser</span>
+            <select id="perBrand">
+              <option>10</option><option selected>25</option><option>50</option><option>100</option><option>200</option>
+            </select>
+          </label>
+          <label class="check"><input type="checkbox" id="reuse" checked> Reuse ads pulled in the last 6h</label>
+        </div>
+        <button class="primary" id="searchBtn" type="submit">Search ads</button>
+        <div class="search-meta">
+          <span class="pill on">Active ads</span>
+          <span id="estimate" class="estimate"></span>
+        </div>
+      </div>
+      <p class="tip">Press Enter to add each advertiser. Page links or IDs give exact results; names also match other pages that mention them.</p>
+    </form>
+  </section>
+
+  <section id="runView" hidden>
+    <div class="wr" id="wr">
+      <div class="wr-head">
+        <div>
+          <h2 class="wr-title" id="runTitle"></h2>
+          <div class="wr-sub" id="runSub"></div>
+        </div>
+        <div class="run-actions">
+          <span class="status" id="statusBadge"></span>
+          <button id="replayBtn" class="wr-btn" hidden>▶ Replay</button>
+          <button id="summaryBtn" class="wr-btn" hidden>Summary</button>
+          <button id="stopBtn" class="wr-btn" hidden>Stop</button>
+          <a id="csvBtn" class="wr-btn" hidden>CSV</a>
+        </div>
+      </div>
+
+      <div class="tiles">
+        <div class="tile dark"><div class="tl">Ads read</div><div class="tv" id="tAds">0</div></div>
+        <div class="tile dark"><div class="tl">Typed judgments</div><div class="tv" id="tJudg">0</div></div>
+        <div class="tile"><div class="tl">Advertisers</div><div class="tv" id="tAdv">0</div></div>
+        <div class="tile"><div class="tl">Judgments / sec</div><div class="tv" id="tRate">0</div></div>
+        <div class="tile"><div class="tl">Elapsed</div><div class="tv"><span id="tTime">0.0</span><small>s</small></div></div>
+        <div class="tile"><div class="tl">Jev cost so far</div><div class="tv" id="tCost">$0.0000</div><div class="tn" id="tCostNote"></div></div>
+      </div>
+
+      <div class="wr-notice" id="notice" hidden></div>
+
+      <div class="wr-grid">
+        <div class="wr-left">
+          <div class="panel ads-panel">
+            <div class="ph"><span>Ads</span><b id="adsCount">0 / 0</b></div>
+            <div class="wall" id="wall"></div>
+            <div class="wall-legend" id="legend"></div>
+          </div>
+          <div class="panel">
+            <div class="ph"><span>The ad Jev is reading · as it runs on Facebook</span><b id="avMeta"></b></div>
+            <div class="adview" id="adview"><div class="td-empty">The real ad shows here, in sync with the teardown.</div></div>
+          </div>
+        </div>
+        <div class="wr-right">
+          <div class="panel">
+            <div class="ph"><span>Teardown</span><b id="tdMs"></b></div>
+            <div class="td" id="td"><div class="td-empty">Waiting for the first ad…</div></div>
+          </div>
+          <div class="panel">
+            <div class="ph"><span>The category</span><b id="catCount">0 ads</b></div>
+            <div class="cat" id="cat"></div>
+          </div>
+          <div class="panel">
+            <div class="ph"><span>Needs a human</span><b id="humanCount">0</b></div>
+            <div class="human" id="human"><div class="td-empty">Low-confidence calls land here.</div></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="finale" id="finale" hidden></div>
+    </div>
+
+    <details class="rawfeed" id="rawfeed">
+      <summary>Raw feed <span class="muted" id="consoleCount"></span>
+        <label class="inline small"><input type="checkbox" id="autoscroll" checked> auto-scroll</label></summary>
+      <div class="console" id="console"></div>
+    </details>
+
+    <nav class="tabs" id="tabs">
+      <button data-tab="ads" class="active">Ads <span id="nAds"></span></button>
+      <button data-tab="mismatch">Mismatches <span id="nMis"></span></button>
+      <button data-tab="brands">Brands</button>
+    </nav>
+
+    <div id="tab-ads" class="tab">
+      <div class="filters" id="filters"></div>
+      <div class="ad-grid" id="adGrid"></div>
+    </div>
+    <div id="tab-mismatch" class="tab" hidden><div id="misList"></div></div>
+    <div id="tab-brands" class="tab" hidden><div id="brandTable"></div></div>
+  </section>
+</main>
+<dialog class="modal" id="settings" aria-labelledby="setTitle">
+  <form id="settingsForm" autocomplete="off">
+    <div class="modal-head">
+      <h2 id="setTitle">Settings</h2>
+      <button type="button" class="modal-x" data-close aria-label="Close settings">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6 6 18"/></svg>
+      </button>
+    </div>
+    <div class="modal-body">
+      <p class="set-note" id="setNote" hidden></p>
+
+      <section class="set-sec">
+        <div class="set-h">
+          <div class="set-logo jev" aria-hidden="true">J</div>
+          <div><b>Jev</b><small>Reads and tags every ad. Billed through OpenRouter.</small></div>
+          <span class="set-status" id="stJev"></span>
+        </div>
+        <label class="field" for="kOpenrouter"><span>OpenRouter API key</span></label>
+        <div class="key-input">
+          <input type="password" id="kOpenrouter" spellcheck="false" autocomplete="off">
+          <button type="button" class="sm-btn" data-reveal="#kOpenrouter">Show</button>
+          <button type="button" class="sm-btn" data-test="openrouter">Test</button>
+        </div>
+        <div class="field-foot">
+          <span id="hOpenrouter"></span>
+          <button type="button" class="link-btn" id="xOpenrouter" data-remove="openrouter_api_key">Remove</button>
+          <a href="https://openrouter.ai/settings/keys" target="_blank" rel="noopener noreferrer">Get a key ↗</a>
+        </div>
+        <div class="test-result" id="rOpenrouter" role="status"></div>
+
+        <label class="field" for="kModel"><span>Jev model</span></label>
+        <input id="kModel" class="text-input" list="jevModels" spellcheck="false" autocomplete="off">
+        <datalist id="jevModels"><option value="typesafe/jev-1.14"></option></datalist>
+        <div class="field-foot">
+          <span>Keep it pinned so results stay comparable between searches.</span>
+          <button type="button" class="link-btn" id="modelReset" hidden>Reset to default</button>
+        </div>
+      </section>
+
+      <section class="set-sec">
+        <div class="set-h">
+          <div class="set-logo apify" aria-hidden="true">A</div>
+          <div><b>Apify</b><small>Pulls ads from Meta Ad Library and opens blocked landing pages.</small></div>
+          <span class="set-status" id="stApify"></span>
+        </div>
+        <label class="field" for="kApify"><span>Apify API token</span></label>
+        <div class="key-input">
+          <input type="password" id="kApify" spellcheck="false" autocomplete="off">
+          <button type="button" class="sm-btn" data-reveal="#kApify">Show</button>
+          <button type="button" class="sm-btn" data-test="apify">Test</button>
+        </div>
+        <div class="field-foot">
+          <span id="hApify"></span>
+          <button type="button" class="link-btn" id="xApify" data-remove="apify_token">Remove</button>
+          <a href="https://console.apify.com/settings/integrations" target="_blank" rel="noopener noreferrer">Get a token ↗</a>
+        </div>
+        <div class="test-result" id="rApify" role="status"></div>
+      </section>
+    </div>
+    <div class="modal-foot">
+      <span class="set-fine" id="setError">Saved to .env on this computer only. Used from your next search.</span>
+      <div class="btns">
+        <button type="button" class="ghost" data-close>Cancel</button>
+        <button type="submit" class="primary" id="setSave">Save</button>
+      </div>
+    </div>
+  </form>
+</dialog>
+
+<script src="/static/app.js"></script>
+</body>
+</html>
