@@ -326,24 +326,16 @@ table.brands th { font-size: 11px; text-transform: uppercase; letter-spacing: .0
 .ph { display: flex; justify-content: space-between; font-family: var(--mono); font-size: 10px; letter-spacing: .15em;
   text-transform: uppercase; padding: 7px 10px; border-bottom: 1px solid #cfcfca; }
 .ph b { letter-spacing: .08em; }
-.ads-panel { min-height: 560px; }
 .td > .td-empty { grid-column: 1 / -1; }
-.wall { display: grid; grid-template-columns: repeat(auto-fill, minmax(var(--th, 36px), 1fr)); gap: 3px; padding: 8px; align-content: start;
-  overflow-y: auto; flex: 1; max-height: 640px; }
 .th { aspect-ratio: 1; position: relative; background: #e9e9e4; cursor: pointer; outline-offset: -1px; animation: pop .25s ease-out; }
 .th img { width: 100%; height: 100%; object-fit: cover; display: block; }
-.th::after { content: ""; position: absolute; left: 0; right: 0; bottom: 0; height: 3px; background: var(--fmt, transparent); }
 .th.pending { opacity: .35; filter: grayscale(1); }
 .th.pending::before { content: ""; position: absolute; inset: 0; background: linear-gradient(90deg, transparent, rgba(255,255,255,.6), transparent);
   background-size: 200% 100%; animation: sh 1s infinite linear; }
 .th.flag { outline: 2px solid var(--red); }
-.th.human { outline: 2px solid var(--orange); }
 .th.current { outline: 2px solid var(--ink); z-index: 1; transform: scale(1.12); box-shadow: 0 2px 8px rgba(0,0,0,.25); }
 .th .ini { position: absolute; inset: 0; display: grid; place-items: center; font: 700 11px var(--mono); color: var(--mute); }
 @keyframes pop { from { transform: scale(.6); opacity: 0; } }
-.wall-legend { display: flex; flex-wrap: wrap; gap: 4px 12px; padding: 6px 10px 9px; border-top: 1px solid #e3e3de;
-  font-family: var(--mono); font-size: 10px; color: var(--mute); }
-.wall-legend i { display: inline-block; width: 10px; height: 3px; margin-right: 4px; vertical-align: middle; }
 
 .td { display: grid; grid-template-columns: 170px 1fr; min-height: 300px; }
 .td-empty { font-family: var(--mono); font-size: 11px; color: var(--mute); padding: 14px; }
@@ -407,8 +399,6 @@ table.brands th { font-size: 11px; text-transform: uppercase; letter-spacing: .0
 @media (max-width: 1100px) {
   .tiles { grid-template-columns: repeat(3, 1fr); }
   .wr-grid { grid-template-columns: 1fr; }
-  .ads-panel { min-height: 280px; }
-  .wall { max-height: 360px; }
 }
 @media (max-width: 640px) {
   .wr { padding: 16px; }
@@ -423,8 +413,6 @@ table.brands th { font-size: 11px; text-transform: uppercase; letter-spacing: .0
 
 /* ---------- the real ad, as it runs on Facebook ---------- */
 .wr-left { display: flex; flex-direction: column; gap: 12px; min-width: 0; }
-.wr .ads-panel { min-height: 200px; }
-.wr .wall { max-height: 330px; }
 .adview { padding: 12px; display: flex; justify-content: center; min-height: 200px; }
 .fbad { width: 100%; max-width: 500px; background: #fff; border-radius: 10px; border: 1px solid #dddfe2;
   font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif; color: #050505; overflow: hidden;
@@ -488,7 +476,6 @@ table.brands th { font-size: 11px; text-transform: uppercase; letter-spacing: .0
 
 .th { background: var(--line); border-radius: 4px; overflow: hidden; }
 .th.current { outline: 2px solid var(--accent); }
-.wall-legend { border-top: 1px solid var(--line); font-size: 12px; }
 .td-empty { font-size: 13px; }
 .td-left { border-right: 1px solid var(--line); }
 .td-img { border: 0; border-radius: 6px; background-color: var(--line); }
@@ -527,3 +514,78 @@ table.brands th { font-size: 11px; text-transform: uppercase; letter-spacing: .0
 .tag { border-radius: 99px; padding: 3px 9px; }
 table.brands th { text-transform: none; letter-spacing: 0; font-size: 13px; color: var(--ink-2); background: #f7f8fa; }
 .mis h4 { text-transform: none; letter-spacing: 0; font-size: 13px; color: var(--ink-2); }
+
+/* ---------- sort stage: every ad flies from the unsorted pile into its bin as Jev tags it ---------- */
+.sortp { --s-bg: #0e1013; --s-card: #16191e; --s-line: #262a31; --s-ink: #eceef1; --s-mute: #969da8; --s-accent: #4d94ff;
+  background: var(--s-bg); color: var(--s-ink); border-radius: var(--radius); box-shadow: var(--shadow); margin-bottom: 12px; overflow: hidden; }
+.sp-head { display: flex; align-items: center; gap: 8px 14px; padding: 10px 14px; border-bottom: 1px solid var(--s-line); flex-wrap: wrap; }
+.sp-prompt { display: flex; align-items: center; gap: 8px; flex: 1; min-width: 200px; min-height: 24px; font-size: 15px; font-weight: 600; }
+.sp-prompt svg { width: 16px; height: 16px; flex: none; fill: var(--s-accent); }
+.sp-prompt span::after { content: ""; display: inline-block; width: 2px; height: 1.05em; margin-left: 3px; vertical-align: -3px;
+  background: var(--s-accent); animation: blink 1.1s steps(2, jump-none) infinite; }
+.sp-by { display: flex; gap: 2px; padding: 3px; border-radius: 99px; background: #191c21; }
+.sp-by button { border: 0; background: none; color: var(--s-mute); font-size: 13px; font-weight: 600; padding: 5px 13px; border-radius: 99px; cursor: pointer; }
+.sp-by button:hover { color: var(--s-ink); }
+.sp-by button.on { background: #2c3139; color: #fff; }
+.sp-head > b { font-size: 13px; font-weight: 600; color: var(--s-mute); font-variant-numeric: tabular-nums; }
+
+.sp-stage { position: relative; height: 430px; background: radial-gradient(ellipse 34% 60% at 19% 52%, #1b1e25 0%, transparent 100%); }
+.sp-pile { position: absolute; left: 0; top: 0; bottom: 0; width: 38%; }
+.sp-cap { position: absolute; left: 14px; top: 12px; font-size: 12.5px; font-weight: 600; color: var(--s-mute); font-variant-numeric: tabular-nums; }
+.sp-bins { position: absolute; left: 38%; right: 0; top: 0; bottom: 0; padding: 12px 12px 12px 0; display: grid; gap: 8px;
+  grid-template-columns: repeat(var(--cols, 4), minmax(0, 1fr)); grid-auto-rows: minmax(0, 1fr); }
+.sp-bins:empty { place-items: center; }
+.sp-bins:empty::before { content: "Jev sorts each ad into a bin here as it reads it."; font-size: 13px; color: var(--s-mute); }
+.bin { display: flex; flex-direction: column; min-width: 0; min-height: 0; padding: 8px 9px 9px; background: var(--s-card);
+  border: 1px solid var(--s-line); border-radius: 8px; animation: fadein .3s; }
+.bin-h { display: flex; align-items: center; gap: 7px; margin-bottom: 7px; font-size: 12.5px; font-weight: 600; }
+.bin-h i { flex: none; width: 8px; height: 8px; border-radius: 50%; background: var(--c); }
+.bin-h span { flex: 1; min-width: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; color: #d9dde2; }
+.bin-h b { color: #fff; font-variant-numeric: tabular-nums; }
+.bin-g { flex: 1; min-height: 0; display: flex; flex-wrap: wrap; align-content: flex-start; gap: 2px; overflow: hidden; }
+.bin-g > * { flex: none; width: var(--bs, 34px); height: var(--bs, 34px); transition: width .2s, height .2s; }
+#trails { position: absolute; inset: 0; width: 100%; height: 100%; pointer-events: none; }
+.sp-fly { position: absolute; inset: 0; pointer-events: none; }
+
+.sp-stage .th { border-radius: 3px; background: #272b33; animation: none; }
+.sp-stage .th.pending { opacity: 1; filter: none; }
+.sp-stage .th.pending::before { background-image: linear-gradient(90deg, transparent, rgba(255,255,255,.14), transparent); }
+.sp-stage .th .ini { color: #8b929c; text-transform: uppercase; }
+.sp-stage .th.current { outline-color: #fff; }
+.sp-stage .th.needs::after { content: ""; position: absolute; right: 2px; top: 2px; width: max(4px, 16%); aspect-ratio: 1; border-radius: 50%;
+  background: var(--orange); box-shadow: 0 0 0 1.5px rgba(0,0,0,.65); }
+.sp-stage .tiny .th.needs::after { display: none; }
+.sp-pile .th { position: absolute; left: calc(50% + var(--px) * var(--rx)); top: calc(50% + 8px + var(--py) * var(--ry)); width: var(--ps, 40px); height: var(--ps, 40px);
+  translate: -50% -50%; rotate: var(--rot); box-shadow: 0 0 0 1px rgba(0,0,0,.5), 0 2px 7px rgba(0,0,0,.4);
+  animation: pop .3s ease-out backwards; transition: left .35s, top .35s, width .35s, height .35s; }
+.sp-pile .th:hover { z-index: 2; rotate: 0deg; scale: 1.2; }
+.sp-fly .th { position: absolute; left: 0; top: 0; will-change: transform; box-shadow: 0 5px 16px rgba(0,0,0,.55); }
+
+.sp-ready { position: absolute; left: 50%; top: 50%; translate: -50% -50%; width: min(310px, 86%); animation: fadein .5s; }
+.sp-ready h3 { margin: 0 0 4px; font-size: 14px; font-weight: 600; color: var(--s-mute); }
+.sp-ready .big { margin-bottom: 14px; font-size: 28px; font-weight: 700; letter-spacing: -.02em; line-height: 1.15; }
+.sp-ready .rr { display: flex; align-items: center; gap: 8px; margin-top: 6px; padding: 8px 11px; background: var(--s-card);
+  border: 1px solid var(--s-line); border-radius: 8px; font-size: 13px; font-weight: 600; }
+.sp-ready .rr i { flex: none; width: 8px; height: 8px; border-radius: 50%; background: var(--c); }
+.sp-ready .rr span { flex: 1; min-width: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.sp-ready .rr b { color: var(--s-mute); font-weight: 600; font-variant-numeric: tabular-nums; }
+
+.sp-foot { display: flex; align-items: center; gap: 8px 14px; flex-wrap: wrap; padding: 9px 14px 11px; border-top: 1px solid var(--s-line);
+  font-size: 12.5px; color: var(--s-mute); font-variant-numeric: tabular-nums; }
+.sp-bar { flex: 1; min-width: 120px; height: 3px; border-radius: 99px; background: #20242b; overflow: hidden; }
+.sp-bar i { display: block; width: 0; height: 100%; border-radius: 99px; background: var(--s-accent); transition: width .3s; }
+.sp-key { display: flex; gap: 14px; }
+.sp-key i { display: inline-block; width: 9px; height: 9px; margin-right: 6px; border-radius: 2px; border: 2px solid var(--c); vertical-align: -1px; }
+.sp-key i.dot { width: 7px; height: 7px; border: 0; border-radius: 50%; background: var(--c); vertical-align: 0; }
+
+@media (max-width: 900px) {
+  .sp-stage { height: auto; background: none; }
+  .sp-pile { position: relative; width: 100%; height: 250px; }
+  .sp-bins { position: relative; left: 0; padding: 0 12px 12px; grid-template-columns: repeat(2, minmax(0, 1fr)); grid-auto-rows: 118px; }
+  .sp-bins:empty { min-height: 60px; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .sp-pile .th, .bin, .sp-ready { animation: none; }
+  .sp-pile .th, .bin-g > *, .sp-bar i { transition: none; }
+  .sp-prompt span::after { animation: none; }
+}

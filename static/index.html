@@ -100,13 +100,38 @@
 
       <div class="wr-notice" id="notice" hidden></div>
 
+      <div class="sortp" id="sortp">
+        <div class="sp-head">
+          <div class="sp-prompt">
+            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2l2.2 6.6L21 11l-6.8 2.4L12 20l-2.2-6.6L3 11l6.8-2.4z"/></svg>
+            <span id="spPrompt"></span>
+          </div>
+          <div class="sp-by" id="spBy" role="group" aria-label="Sort ads by">
+            <button type="button" data-by="creative_format" class="on" aria-pressed="true">Format</button>
+            <button type="button" data-by="hook_type" aria-pressed="false">Hook</button>
+            <button type="button" data-by="offer_type" aria-pressed="false">Offer</button>
+            <button type="button" data-by="awareness_stage" aria-pressed="false">Stage</button>
+          </div>
+          <b id="adsCount">0 / 0</b>
+        </div>
+        <div class="sp-stage" id="stage">
+          <div class="sp-pile" id="pile">
+            <span class="sp-cap" id="pileCap">Unsorted</span>
+            <div class="sp-ready" id="spReady" hidden></div>
+          </div>
+          <div class="sp-bins" id="bins"></div>
+          <canvas id="trails" aria-hidden="true"></canvas>
+          <div class="sp-fly" id="fly"></div>
+        </div>
+        <div class="sp-foot">
+          <span id="spStatus" role="status"></span>
+          <div class="sp-bar"><i id="spBar"></i></div>
+          <div class="sp-key" id="legend"></div>
+        </div>
+      </div>
+
       <div class="wr-grid">
         <div class="wr-left">
-          <div class="panel ads-panel">
-            <div class="ph"><span>Ads</span><b id="adsCount">0 / 0</b></div>
-            <div class="wall" id="wall"></div>
-            <div class="wall-legend" id="legend"></div>
-          </div>
           <div class="panel">
             <div class="ph"><span>The ad Jev is reading · as it runs on Facebook</span><b id="avMeta"></b></div>
             <div class="adview" id="adview"><div class="td-empty">The real ad shows here, in sync with the teardown.</div></div>
