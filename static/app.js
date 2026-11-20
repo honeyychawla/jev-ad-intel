@@ -327,16 +327,33 @@ function line(t, kind, html) {
 }
 
 // ---------- sort stage ----------
-// Every ad pulled lands in an unsorted pile; when Jev tags it, its thumbnail flies along a curved trail into
-// the bin for its format (or hook, offer, stage). Thumbnails are the same elements the war room highlights and pins.
+// Every ad pulled is caught in a messy cyclone of unsorted ads: ragged spiral arms around a clear eye, each thumbnail
+// tumbling inward at its own size and speed and whipping faster as it nears the centre. When Jev tags an ad it is flung out along a curved
+// trail into the bin for its format (or hook, offer, stage). Thumbnails are the same elements the war room highlights and pins.
 const BY = {  // row field -> [name in the prompt, plural for the totals]
   creative_format: ['creative format', 'formats'], hook_type: ['hook', 'hooks'],
   offer_type: ['offer', 'offers'], awareness_stage: ['awareness stage', 'stages'],
 };
 const ST = { by: 'creative_format', bins: new Map(), at: new Map(), spot: new Map(), pile: new Set(), fl: new Map(),
-  tails: [], n: 0, m: null, ps: 40, binBox: null, raf: 0, typing: 0, ready: false };
+  storm: null, tails: [], n: 0, m: null, ps: 40, binBox: null, raf: 0, typing: 0, ready: false };
 const REDUCED = matchMedia('(prefers-reduced-motion: reduce)');
 const FLY_MS = 900, TAIL = 0.45;
+// The storm is laid out in its own units (radius CYC_R) and scaled to fit. ARMS spiral arms, each BAND degrees wide,
+// wind WIND degrees per e-fold of radius around an eye of radius EYE; the storm turns once per SPIN_MS. A thumbnail
+// takes TRIP_MS from rim to eye at average speed (each ad's own speed is SPEED times that), and a saved search gets
+// SWIRL_MS to spin up before sorting starts.
+const CYC_R = 200, ARMS = 4, BAND = 100, WIND = 150, EYE = 0.22, STEPS = 16, TRIP_MS = 12000, SPIN_MS = 16000, SWIRL_MS = 1900;
+// What makes it messy, per ad: radius scatter (JR), size range (SIZE), how far it tumbles over a trip (TUMBLE degrees),
+// speed range (SPEED), wobble along the way (WOB: radius, degrees), and how much thumbnails overlap (FILL).
+const JR = 0.46, SIZE = [0.55, 1.5], TUMBLE = 540, SPEED = [0.55, 1.5], WOB = [0.07, 18], FILL = 1.9;
+// The path every thumbnail follows, sampled at STEPS + 1 points of its trip. Radius falls so that equal time covers
+// equal area (even coverage, and the pull inward speeds up); the angle follows a logarithmic spiral, so the turn rate
+// climbs as 1 / radius², like a real vortex. Size grows from nothing at the rim and shrinks to nothing in the eye.
+const PATH = Array.from({ length: STEPS + 1 }, (_, i) => {
+  const r = Math.sqrt(1 - (1 - EYE * EYE) * i / STEPS);
+  return { r, deg: WIND * Math.log(r), s: i === 0 || i === STEPS ? 0 : 0.42 + 0.58 * r };
+});
+const hash = (i, k) => frac(Math.sin(i * 127.1 + k * 311.7) * 43758.5453);  // repeatable scatter for the i-th ad
 const frac = x => x - Math.floor(x);
 const cap = s => s.charAt(0).toUpperCase() + s.slice(1);
 const plural = (n, one, many) => `${n.toLocaleString()} ${n === 1 ? one : many}`;
@@ -348,8 +365,8 @@ const binColor = k => (k === '_error' ? '#6b7280' : color(k));
 function stMeasure() {
   const stage = $('#stage'), pile = $('#pile'), w = stage.clientWidth, h = stage.clientHeight;
   if (!w || !h) return;
-  const pw = pile.clientWidth, ph = pile.clientHeight, ry = ph * 0.36, rx = Math.min(pw * 0.42, ry * 1.25);
-  ST.m = { w, h, cx: pile.offsetLeft + pw / 2, cy: pile.offsetTop + ph / 2 + 8, rx, ry, f: 1 };
+  const pw = pile.clientWidth, ph = pile.clientHeight;
+  ST.m = { w, h, cx: pile.offsetLeft + pw / 2, cy: pile.offsetTop + ph / 2 + 4, R: Math.min(pw * 0.43, ph * 0.41) };
   const c = $('#trails'), d = window.devicePixelRatio || 1;
   c.width = Math.round(w * d); c.height = Math.round(h * d);
   c.getContext('2d').setTransform(d, 0, 0, d, 0, 0);
@@ -357,29 +374,117 @@ function stMeasure() {
   stPileSize();
   ST.bins.forEach(stFit);
 }
-// Thumbnails shrink as the pile grows so it stays one dense ball; a small pile pulls in towards the centre.
+// Thumbnails shrink as more ads join the storm so it stays full.
 function stPileSize() {
   const m = ST.m;
   if (!m) return;
-  const n = Math.max(ST.n, 1), area = Math.PI * m.rx * m.ry;
-  ST.ps = Math.max(12, Math.min(56, 1.5 * Math.sqrt(area / n)));
-  m.f = Math.max(0.3, Math.min(1, ST.ps * Math.sqrt(n / area) / 1.5));
-  const st = $('#pile').style;
-  st.setProperty('--ps', ST.ps.toFixed(1) + 'px');
-  st.setProperty('--rx', (m.rx * m.f).toFixed(1) + 'px');
-  st.setProperty('--ry', (m.ry * m.f).toFixed(1) + 'px');
+  const scale = m.R / CYC_R, st = $('#pile').style;
+  ST.ps = Math.round(Math.max(12, Math.min(64, FILL * Math.sqrt(Math.PI * m.R * m.R / Math.max(ST.n, 1)))));
+  st.setProperty('--S', scale.toFixed(4));
+  st.setProperty('--pw', (ST.ps / scale).toFixed(1) + 'px');
   $('#pile').classList.toggle('tiny', ST.ps < 14);
 }
+// Spin up fast, then settle to a steady turn.
+function stSpinUp(anim, boost) {
+  if (!anim) return;
+  const t0 = performance.now(), settle = now => {
+    const t = Math.min(1, (now - t0) / (SWIRL_MS + 900));
+    anim.playbackRate = 1 + boost * Math.pow(1 - t, 3);
+    if (t < 1) ST.spin = requestAnimationFrame(settle);
+  };
+  ST.spin = requestAnimationFrame(settle);
+}
+// The storm: one element at the centre of the pile that turns anticlockwise and holds every unsorted thumbnail,
+// over a faint painting of the cloud bands and the eye.
+function stCyclone() {
+  if (ST.storm) ST.storm.el.remove();
+  cancelAnimationFrame(ST.spin);
+  const el = document.createElement('div'), cv = document.createElement('canvas'), half = CYC_R * 1.25, d = window.devicePixelRatio || 1;
+  el.className = 'cyc';
+  cv.className = 'storm';
+  cv.width = cv.height = Math.round(2 * half * d);
+  const ctx = cv.getContext('2d');
+  ctx.setTransform(d, 0, 0, d, half * d, half * d);
+  const blob = (x, y, rad, alpha) => {
+    const g = ctx.createRadialGradient(x, y, 0, x, y, rad);
+    g.addColorStop(0, `rgba(122,162,255,${alpha})`); g.addColorStop(1, 'rgba(122,162,255,0)');
+    ctx.fillStyle = g; ctx.beginPath(); ctx.arc(x, y, rad, 0, 7); ctx.fill();
+  };
+  const at = (deg0, r) => { const th = (deg0 + WIND * Math.log(r)) * Math.PI / 180; return [CYC_R * r * Math.cos(th), CYC_R * r * Math.sin(th)]; };
+  for (let arm = 0; arm < ARMS; arm++) for (let k = 0; k <= 130; k++) {  // ragged cloud bands along each arm, trailing off past the rim
+    const n = arm * 131 + k, r = EYE + (1.22 - EYE) * k / 130, [x, y] = at(arm * 360 / ARMS + (hash(n, 7) - 0.5) * 50, r);
+    blob(x, y, CYC_R * (0.06 + 0.15 * r) * (0.6 + 0.9 * hash(n, 8)), (0.11 - 0.035 * r) * Math.min(1, (1.22 - r) / 0.3));
+  }
+  ctx.lineWidth = 1;
+  for (let k = 0; k < 30; k++) {  // broken wind lines following the same spiral
+    const a0 = 360 * hash(k, 11), r0 = EYE + 0.5 * hash(k, 12), r1 = r0 + 0.25 + 0.5 * hash(k, 13);
+    ctx.strokeStyle = `rgba(170,198,255,${0.05 + 0.1 * hash(k, 14)})`;
+    ctx.beginPath();
+    for (let j = 0; j <= 60; j++) { const [x, y] = at(a0, r0 + (r1 - r0) * j / 60); j ? ctx.lineTo(x, y) : ctx.moveTo(x, y); }
+    ctx.stroke();
+  }
+  const wall = ctx.createRadialGradient(0, 0, CYC_R * EYE * 0.75, 0, 0, CYC_R * EYE * 2.1);  // the bright wall round the eye
+  wall.addColorStop(0, 'rgba(160,190,255,0)'); wall.addColorStop(0.3, 'rgba(160,190,255,.2)'); wall.addColorStop(1, 'rgba(160,190,255,0)');
+  ctx.fillStyle = wall; ctx.beginPath(); ctx.arc(0, 0, CYC_R * EYE * 2.1, 0, 7); ctx.fill();
+  ctx.globalCompositeOperation = 'destination-out';  // and the clear eye
+  const eye = ctx.createRadialGradient(0, 0, CYC_R * EYE * 0.5, 0, 0, CYC_R * EYE * 0.95);
+  eye.addColorStop(0, 'rgba(0,0,0,1)'); eye.addColorStop(1, 'rgba(0,0,0,0)');
+  ctx.fillStyle = eye; ctx.beginPath(); ctx.arc(0, 0, CYC_R * EYE, 0, 7); ctx.fill();
+  el.appendChild(cv);
+  $('#pile').prepend(el);
+  const anim = REDUCED.matches ? null : el.animate({ rotate: ['0deg', '-360deg'] }, { duration: SPIN_MS, iterations: Infinity });
+  ST.storm = { el, anim };
+  stSpinUp(anim, 9);
+}
+// How far the storm has turned, in degrees (anticlockwise is negative), read from its clock rather than the page.
+const stTurn = () => (ST.storm && ST.storm.anim ? -360 * ((ST.storm.anim.currentTime || 0) % SPIN_MS) / SPIN_MS : 0);
+// Where a storm thumbnail is at progress p (0 = rim, 1 = eye) of its trip: angle, radius and size in storm units,
+// and its own tilt. It steps along PATH exactly as the browser does between keyframes, so it matches the screen.
+function stPose(sp, p) {
+  const x = Math.min(STEPS - 1e-9, Math.max(0, p * STEPS)), i = Math.floor(x), t = x - i, a = PATH[i], b = PATH[i + 1];
+  const mix = (u, v) => u + (v - u) * t;
+  return { deg: sp.a0 + mix(a.deg + sp.nd[i], b.deg + sp.nd[i + 1]), r: mix(a.r, b.r) * sp.jr + mix(sp.nr[i], sp.nr[i + 1]),
+    s: mix(a.s, b.s) * sp.sz, tilt: sp.tilt + sp.spin * p };
+}
+const stPoseCss = q => `rotate(${q.deg.toFixed(2)}deg) translateX(${(CYC_R * q.r).toFixed(1)}px) rotate(${q.tilt.toFixed(1)}deg) scale(${q.s.toFixed(3)})`;
 function stAdd(id, el) {
-  // A fixed, evenly scattered spot in the unit disc for the i-th ad, so the pile stays even however many arrive.
-  const i = ST.n++, r = Math.sqrt(frac(0.5 + i * 0.7548776662466927)) * 0.94, a = 2 * Math.PI * frac(0.5 + i * 0.5698402909980532);
-  const spot = [r * Math.cos(a), r * Math.sin(a), (frac(i * 0.381966) - 0.5) * 22];
-  ST.spot.set(id, spot); ST.at.set(id, null); ST.pile.add(id);
-  el.style.setProperty('--px', spot[0].toFixed(4));
-  el.style.setProperty('--py', spot[1].toFixed(4));
-  el.style.setProperty('--rot', spot[2].toFixed(1) + 'deg');
-  $('#pile').appendChild(el);
+  const i = ST.n++, sp = { anim: null };
+  ST.spot.set(id, sp); ST.at.set(id, null); ST.pile.add(id);
+  // A whole search is pulled in over about a second; a live ad is pulled in as it arrives.
+  el.style.setProperty('--d', (V.mode === 'live' ? 0 : Math.round(900 * i / Math.max(S.order.length, 1))) + 'ms');
+  // An arm, a place across it (thicker in the middle), a random head start along the trip, and its own size,
+  // tumble, speed and wobble.
+  const rnd = k => hash(i, k);
+  Object.assign(sp, {
+    phase: rnd(9),
+    a0: (i % ARMS) * 360 / ARMS + (rnd(1) + rnd(2) - 1) * BAND / 2,
+    jr: 1 - JR / 2 + JR * rnd(3),
+    tilt: Math.round(rnd(4) * 360),
+    spin: (rnd(5) - 0.5) * 2 * TUMBLE,
+    sz: SIZE[0] + (SIZE[1] - SIZE[0]) * rnd(6),
+    dur: TRIP_MS / (SPEED[0] + (SPEED[1] - SPEED[0]) * rnd(7)),
+    nr: PATH.map((_, k) => (k === 0 || k === STEPS ? 0 : (hash(i, 20 + k) - 0.5) * 2 * WOB[0])),
+    nd: PATH.map((_, k) => (hash(i, 40 + k) - 0.5) * 2 * WOB[1]),
+  });
+  ST.storm.el.appendChild(el);
+  if (REDUCED.matches) el.style.transform = stPoseCss(stPose(sp, sp.phase));
+  else sp.anim = el.animate(PATH.map((_, k) => ({ transform: stPoseCss(stPose(sp, k / STEPS)) })),
+    { duration: sp.dur, iterations: Infinity, delay: -sp.phase * sp.dur });
   stPileSize();
+}
+// Take a thumbnail out of the storm's flow (its looping animation would otherwise override where a flight puts it).
+function stRelease(id) {
+  const sp = ST.spot.get(id);
+  if (sp && sp.anim) { sp.anim.cancel(); sp.anim = null; }
+}
+// Where a thumbnail leaves the pile from, how big and tilted it is there, and which way it is thrown.
+function stFrom(id) {
+  const m = ST.m, sp = ST.spot.get(id);
+  const p = (sp.anim && sp.anim.effect.getComputedTiming().progress) ?? sp.phase;
+  const q = stPose(sp, p), deg = q.deg + stTurn(), th = deg * Math.PI / 180, rad = q.r * m.R, x = m.cx + rad * Math.cos(th), y = m.cy + rad * Math.sin(th);
+  return { p0: [x, y], w0: Math.max(6, ST.ps * q.s),
+    rot: ((deg + q.tilt + 180) % 360 + 360) % 360 - 180,  // unwinds the short way round as it flies
+    c1: [x + Math.sin(th) * 120, y - Math.cos(th) * 120] };  // flung off the way the storm is turning
 }
 
 function stBin(k) {
@@ -448,12 +553,10 @@ function stSort(id, delay = 0, from) {
 }
 function stUnbin(k) { const b = ST.bins.get(k); if (b) b.num.textContent = --b.shown; }
 function stLift(f) {
-  if (!f.p0) {  // still in the pile: its spot is known without measuring
-    const m = ST.m, [x, y, rot] = ST.spot.get(f.id);
-    f.p0 = [m.cx + x * m.rx * m.f, m.cy + y * m.ry * m.f]; f.w0 = ST.ps; f.rot = rot;
-  }
+  if (!f.p0) Object.assign(f, stFrom(f.id));  // still in the pile: where it is is known without measuring
   f.up = true;
   ST.pile.delete(f.id);
+  stRelease(f.id);
   f.el.style.width = f.el.style.height = f.w0 + 'px';
   f.el.style.transform = `translate(${f.p0[0] - f.w0 / 2}px,${f.p0[1] - f.w0 / 2}px) rotate(${f.rot}deg)`;
   $('#fly').appendChild(f.el);
@@ -461,6 +564,7 @@ function stLift(f) {
 function stLand(f) {
   ST.fl.delete(f.id);
   ST.pile.delete(f.id);
+  stRelease(f.id);
   f.el.style.width = f.el.style.height = f.el.style.transform = '';
   f.slot.replaceWith(f.el);
   f.b.num.textContent = ++f.b.shown;
@@ -474,7 +578,7 @@ function stLand(f) {
 // The curve a flight follows: leaves and arrives level, so the trails read as streams between pile and bins.
 function stPoint(f, u) {
   const [x0, y0] = f.p0, [x3, y3] = f.to, dx = x3 - x0, dy = y3 - y0, flat = Math.abs(dx) >= Math.abs(dy);
-  const x1 = flat ? x0 + dx * 0.5 : x0 + f.bend, y1 = flat ? y0 + f.bend : y0 + dy * 0.5;
+  const [x1, y1] = f.c1 || (flat ? [x0 + dx * 0.5, y0 + f.bend] : [x0 + f.bend, y0 + dy * 0.5]);
   const x2 = flat ? x3 - dx * 0.5 : x3, y2 = flat ? y3 : y3 - dy * 0.5, v = 1 - u;
   const a = v * v * v, b = 3 * v * v * u, c = 3 * v * u * u, d = u * u * u;
   return [a * x0 + b * x1 + c * x2 + d * x3, a * y0 + b * y1 + c * y2 + d * y3];
@@ -510,8 +614,9 @@ function stFrame(now) {
   ctx.clearRect(0, 0, m.w, m.h);
   ctx.globalCompositeOperation = 'lighter';
   ctx.lineCap = 'round';
+  let moved = false;
   for (const f of air) {
-    if (!f.up) stLift(f);
+    if (!f.up) { stLift(f); moved = true; }
     const t = Math.min(1, (now - f.t0) / f.dur), e = ease(t), [x, y] = stPoint(f, e);
     const size = (f.w0 + (f.to[2] - f.w0) * e) * (1 + 0.18 * Math.sin(Math.PI * t));
     f.el.style.transform = `translate(${x - f.w0 / 2}px,${y - f.w0 / 2}px) rotate(${f.rot * (1 - e)}deg) scale(${size / f.w0})`;
@@ -524,6 +629,7 @@ function stFrame(now) {
     return t < 1 + TAIL;
   });
   landed.forEach(f => { stLand(f); ST.tails.push(f); });
+  if (moved || landed.length) stStatus();
   if (ST.fl.size || ST.tails.length) stRun();
 }
 
@@ -551,7 +657,8 @@ function stSetBy(by) {
 // Sort a whole saved search in one cascade: at most ~150 thumbnails in the air at once.
 function stCascade(ids) {
   const gap = Math.min(4500, Math.max(900, ids.length * 6)) / Math.max(ids.length, 1);
-  ids.forEach((id, i) => stSort(id, 450 + i * gap));
+  const wait = REDUCED.matches ? 0 : SWIRL_MS + 500;  // let the collage spiral in and turn for a beat first
+  ids.forEach((id, i) => stSort(id, wait + i * gap));
   stStatus();
 }
 
@@ -575,6 +682,7 @@ function stStatus() {
     : busy ? `Sorting ${done.toLocaleString()} of ${plural(total, 'ad', 'ads')}`
     : left ? `${done.toLocaleString()} of ${plural(total, 'ad', 'ads')} sorted · ${left.toLocaleString()} not read`
     : read ? `${plural(read, 'ad', 'ads')} sorted into ${kinds}${unread}` : `${plural(bad, 'ad', 'ads')} couldn't be read`;
+  $('#pile').classList.toggle('calm', !busy && !left);  // nothing left to sort: the storm dies down
   const ready = read > 0 && !busy && !left;
   if (ready === ST.ready) return;
   ST.ready = ready;
@@ -588,7 +696,7 @@ function stReset() {
   cancelAnimationFrame(ST.raf);
   Object.assign(ST, { raf: 0, tails: [], n: 0, ready: false });
   [ST.bins, ST.at, ST.spot, ST.pile, ST.fl].forEach(x => x.clear());
-  document.querySelectorAll('#pile .th').forEach(e => e.remove());
+  stCyclone();
   $('#bins').innerHTML = ''; $('#fly').innerHTML = '';
   $('#spReady').hidden = true;
   stMeasure();
@@ -597,7 +705,7 @@ function stReset() {
   stStatus();
 }
 $('#spBy').addEventListener('click', e => { const b = e.target.closest('[data-by]'); if (b) stSetBy(b.dataset.by); });
-new ResizeObserver(() => { if (V) stMeasure(); }).observe($('#stage'));
+
 
 // ---------- teardown war room ----------
 // V is what the war room shows. Live: fed by events. Replay: fed by a timer from saved rows.
@@ -909,7 +1017,7 @@ function startReplay() {
     wrAnalysed(S.rows.get(ids[i++]), false);
     replayTimer = setTimeout(step, per);
   };
-  step();
+  replayTimer = setTimeout(step, REDUCED.matches ? 0 : SWIRL_MS);  // once the collage has spiralled in
   document.getElementById('wr').scrollIntoView({ behavior: 'smooth', block: 'start' });
 }
 $('#replayBtn').addEventListener('click', startReplay);

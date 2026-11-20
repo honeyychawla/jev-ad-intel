@@ -333,7 +333,7 @@ table.brands th { font-size: 11px; text-transform: uppercase; letter-spacing: .0
 .th.pending::before { content: ""; position: absolute; inset: 0; background: linear-gradient(90deg, transparent, rgba(255,255,255,.6), transparent);
   background-size: 200% 100%; animation: sh 1s infinite linear; }
 .th.flag { outline: 2px solid var(--red); }
-.th.current { outline: 2px solid var(--ink); z-index: 1; transform: scale(1.12); box-shadow: 0 2px 8px rgba(0,0,0,.25); }
+.th.current { outline: 2px solid var(--ink); z-index: 1; scale: 1.12; box-shadow: 0 2px 8px rgba(0,0,0,.25); }
 .th .ini { position: absolute; inset: 0; display: grid; place-items: center; font: 700 11px var(--mono); color: var(--mute); }
 @keyframes pop { from { transform: scale(.6); opacity: 0; } }
 
@@ -529,9 +529,9 @@ table.brands th { text-transform: none; letter-spacing: 0; font-size: 13px; colo
 .sp-by button.on { background: #2c3139; color: #fff; }
 .sp-head > b { font-size: 13px; font-weight: 600; color: var(--s-mute); font-variant-numeric: tabular-nums; }
 
-.sp-stage { position: relative; height: 430px; background: radial-gradient(ellipse 34% 60% at 19% 52%, #1b1e25 0%, transparent 100%); }
+.sp-stage { position: relative; height: 430px; overflow: hidden; background: radial-gradient(ellipse 34% 60% at 19% 52%, #1b1e25 0%, transparent 100%); }
 .sp-pile { position: absolute; left: 0; top: 0; bottom: 0; width: 38%; }
-.sp-cap { position: absolute; left: 14px; top: 12px; font-size: 12.5px; font-weight: 600; color: var(--s-mute); font-variant-numeric: tabular-nums; }
+.sp-cap { position: absolute; z-index: 1; left: 14px; top: 12px; font-size: 12.5px; font-weight: 600; color: var(--s-mute); font-variant-numeric: tabular-nums; }
 .sp-bins { position: absolute; left: 38%; right: 0; top: 0; bottom: 0; padding: 12px 12px 12px 0; display: grid; gap: 8px;
   grid-template-columns: repeat(var(--cols, 4), minmax(0, 1fr)); grid-auto-rows: minmax(0, 1fr); }
 .sp-bins:empty { place-items: center; }
@@ -552,14 +552,23 @@ table.brands th { text-transform: none; letter-spacing: 0; font-size: 13px; colo
 .sp-stage .th.pending::before { background-image: linear-gradient(90deg, transparent, rgba(255,255,255,.14), transparent); }
 .sp-stage .th .ini { color: #8b929c; text-transform: uppercase; }
 .sp-stage .th.current { outline-color: #fff; }
-.sp-stage .th.needs::after { content: ""; position: absolute; right: 2px; top: 2px; width: max(4px, 16%); aspect-ratio: 1; border-radius: 50%;
+.sp-stage .th.needs::after { content: ""; position: absolute; right: 2px; top: 2px; width: clamp(4px, 16%, 7px); aspect-ratio: 1; border-radius: 50%;
   background: var(--orange); box-shadow: 0 0 0 1.5px rgba(0,0,0,.65); }
 .sp-stage .tiny .th.needs::after { display: none; }
-.sp-pile .th { position: absolute; left: calc(50% + var(--px) * var(--rx)); top: calc(50% + 8px + var(--py) * var(--ry)); width: var(--ps, 40px); height: var(--ps, 40px);
-  translate: -50% -50%; rotate: var(--rot); box-shadow: 0 0 0 1px rgba(0,0,0,.5), 0 2px 7px rgba(0,0,0,.4);
-  animation: pop .3s ease-out backwards; transition: left .35s, top .35s, width .35s, height .35s; }
-.sp-pile .th:hover { z-index: 2; rotate: 0deg; scale: 1.2; }
+/* the cyclone: one turning element at the centre of the pile, laid out in its own units and scaled (--S) to fit.
+   Each thumbnail's place in the flow is animated from app.js; here it is only sized and pulled in from outside. */
+.cyc { position: absolute; left: 50%; top: calc(50% + 4px); width: 0; height: 0; scale: var(--S, 1); will-change: transform;
+  transition: scale .4s, opacity .8s; }
+.sp-pile.calm .cyc { opacity: 0; }
+.storm { position: absolute; left: -250px; top: -250px; width: 500px; height: 500px; pointer-events: none; }
+.sp-pile .th { position: absolute; left: 0; top: 0; width: var(--pw, 40px); height: var(--pw, 40px); translate: -50% -50%;
+  box-shadow: 0 0 0 1px rgba(0,0,0,.5), 0 2px 7px rgba(0,0,0,.4);
+  animation: swirl 1s cubic-bezier(.16, .8, .3, 1) var(--d, 0ms) backwards; transition: width .35s, height .35s; }
+.sp-pile .th:hover, .sp-pile .th.current { z-index: 2; scale: none; outline: 2px solid #fff; }
+/* pulled in from outside the storm: turning about the eye (the thumbnail's own origin sits on it) while closing in */
+@keyframes swirl { from { rotate: 150deg; scale: 2.2; opacity: 0; } }
 .sp-fly .th { position: absolute; left: 0; top: 0; will-change: transform; box-shadow: 0 5px 16px rgba(0,0,0,.55); }
+.sp-fly .th.current { scale: none; }
 
 .sp-ready { position: absolute; left: 50%; top: 50%; translate: -50% -50%; width: min(310px, 86%); animation: fadein .5s; }
 .sp-ready h3 { margin: 0 0 4px; font-size: 14px; font-weight: 600; color: var(--s-mute); }

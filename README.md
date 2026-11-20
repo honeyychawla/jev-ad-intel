@@ -24,8 +24,8 @@ Settings (the gear at the top right), which tests each key and saves it to `.env
 ```
 
 Open http://localhost:8765, type advertisers (names, Facebook page links or page IDs),
-pick a country, and hit Search. The teardown dashboard fills live: every ad pulled lands in an
-unsorted pile and flies into its bin as Jev tags it (switch the bins between format, hook, offer
+pick a country, and hit Search. The teardown dashboard fills live: every ad pulled is caught in a
+swirling storm of unsorted ads and is flung into its bin as Jev tags it (switch the bins between format, hook, offer
 and awareness stage), each ad broken down field by field with Jev's confidence, category bars, a "needs a human"
 strip for low-confidence calls, and a summary screen at the end. Past searches are saved in
 `runs/`; click the search bar to see recent searches, open one and press ▶ Replay to watch the
